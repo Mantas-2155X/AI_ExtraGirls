@@ -22,7 +22,7 @@ using ConfigScene;
 using Illusion.Extensions;
 
 namespace AI_ExtraGirls {
-    [BepInPlugin(nameof(AI_ExtraGirls), nameof(AI_ExtraGirls), VERSION)]
+    [BepInPlugin(nameof(AI_ExtraGirls), nameof(AI_ExtraGirls), VERSION)][BepInProcess("AI-Syoujyo")]
     public class AI_ExtraGirls : BaseUnityPlugin
     {
         public const string VERSION = "1.0.0";
@@ -54,6 +54,7 @@ namespace AI_ExtraGirls {
             HarmonyWrapper.PatchAll(typeof(AI_ExtraGirls));
         }
 
+        
         private static void CharaUI_AddScroll()
         { 
             foreach (string uiName in toAddList)
@@ -262,6 +263,26 @@ namespace AI_ExtraGirls {
             return il;
         }
         
+        
+        [HarmonyTranspiler, HarmonyPatch(typeof(MapUIContainer), "GetActorColor")]
+        public static IEnumerable<CodeInstruction> MapUIContainer_GetActorColor_RemoveActorColorCheckError(IEnumerable<CodeInstruction> instructions)
+        {
+            var il = instructions.ToList();
+
+            var index = il.FindIndex(instruction => instruction.opcode == OpCodes.Call && (instruction.operand as MethodInfo)?.Name == "LogError");
+            if (index <= 0)
+            {
+                Logger.LogMessage("Failed transpiling 'MapUIContainer_GetActorColor_RemoveActorColorCheckError' LogError index not found!");
+                Logger.LogWarning("Failed transpiling 'MapUIContainer_GetActorColor_RemoveActorColorCheckError' LogError index not found!");
+                return il;
+            }
+
+            for (int i = -6; i < 1; i++)
+                il[index + i].opcode = OpCodes.Nop;
+            
+            return il;
+        }
+
         [HarmonyPostfix, HarmonyPatch(typeof(WorldData), "Copy")]
         public static void WorldData_Copy_AddRemoveAgents(WorldData __instance)
         {
