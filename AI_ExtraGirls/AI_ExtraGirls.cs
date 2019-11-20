@@ -1,18 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
+using HarmonyLib;
+
+using BepInEx;
+using BepInEx.Harmony;
+using BepInEx.Logging;
+using BepInEx.Configuration;
+
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Collections.Generic;
+
 using AIProject;
 using AIProject.UI;
 using AIProject.SaveData;
-using ConfigScene;
+
 using UnityEngine;
 using UnityEngine.UI;
-using HarmonyLib;
-using BepInEx;
-using BepInEx.Harmony;
-using BepInEx.Configuration;
+
+using ConfigScene;
 using Illusion.Extensions;
 
 namespace AI_ExtraGirls {
@@ -20,20 +26,29 @@ namespace AI_ExtraGirls {
     public class AI_ExtraGirls : BaseUnityPlugin
     {
         public const string VERSION = "1.0.0";
+        private new static ManualLogSource Logger;
         
-        private static int girlCount = 4;
-        private static ConfigEntry<int> GirlCount { get; set; }
-        
+        /*
+         * Default girl count, increase/decrease to change the girl count some methods see as a base, in-case the game gets an update.
+         * Will need manual change: ChangeCharaCount()
+         * May need manual change: AddIcons(), StatusUI_OnBeforeStart_AddElementsAndBackgrounds()
+        */
+        private const int defaultGirlCount = 4;
         private static readonly string[] toAddList =
         {
             "CharaChangeUI(Clone)",
             "CharaLookEditUI(Clone)",
             "CharaMigrateUI(Clone)"
         };
-
+        
+        private static int girlCount = 4;
+        private static ConfigEntry<int> GirlCount { get; set; }
+        
         private void Awake()
         {
-            GirlCount = Config.AddSetting(new ConfigDefinition("Requires restart! Modifies save!", "Free Roam Girl Count"), 4, new ConfigDescription("Requires a restart to apply, will modify existing save. Save will stop working if the user doesn't have the plugin.", new AcceptableValueRange<int>(4, 999)));
+            Logger = base.Logger;
+            
+            GirlCount = Config.AddSetting("Requires restart! Modifies save!", "Free Roam Girl Count", defaultGirlCount, new ConfigDescription("Requires a restart to apply, will modify existing save. Save will stop working if the user doesn't have the plugin.", new AcceptableValueRange<int>(defaultGirlCount, 99)));
             girlCount = GirlCount.Value;
             
             HarmonyWrapper.PatchAll(typeof(AI_ExtraGirls));
@@ -44,26 +59,26 @@ namespace AI_ExtraGirls {
             foreach (string uiName in toAddList)
             {
                 GameObject Information = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/" + uiName + "/Panel/SelectPanel/Infomation");
-                GameObject ElementLayout = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/" + uiName + "/Panel/SelectPanel/Infomation/ElementLayout");
-
-                if (Information == null || ElementLayout == null)
+                if (Information == null)
                     continue;
 
+                Transform ElementLayout = Information.transform.Find("ElementLayout");
+                if (ElementLayout == null)
+                    continue;
+                
                 GameObject ScrollView = new GameObject("ScrollView", typeof(RectTransform));
                 ScrollView.transform.SetParent(Information.transform, false);
-                ScrollView.AddComponent<ScrollRect>();
-                var svScrollRect = ScrollView.GetComponent<ScrollRect>();
+                var svScrollRect = ScrollView.AddComponent<ScrollRect>();
 
                 GameObject ViewPort = new GameObject("ViewPort", typeof(RectTransform));
                 ViewPort.transform.SetParent(ScrollView.transform, false);
                 ViewPort.AddComponent<RectMask2D>();
-                ViewPort.AddComponent<Image>();
-                ViewPort.GetComponent<Image>().color = new Color(0, 0, 0, 0);
+                ViewPort.AddComponent<Image>().color = new Color(0, 0, 0, 0);
                 var vpRectTransform = ViewPort.GetComponent<RectTransform>();
                 
-                ElementLayout.transform.SetParent(ViewPort.transform, false);
+                ElementLayout.SetParent(ViewPort.transform, false);
 
-                svScrollRect.content = ElementLayout.GetComponent<RectTransform>();
+                svScrollRect.content = ElementLayout.gameObject.GetComponent<RectTransform>();
                 svScrollRect.viewport = vpRectTransform;
                 svScrollRect.horizontal = false;
                 svScrollRect.scrollSensitivity = 40;
@@ -86,7 +101,7 @@ namespace AI_ExtraGirls {
                 if (uiName != "CharaLookEditUI(Clone)") 
                     continue;
 
-                Transform button = ElementLayout.transform.Find("btnCharaCreation");
+                Transform button = ElementLayout.Find("btnCharaCreation");
                 if (button == null) 
                     continue;
 
@@ -98,34 +113,34 @@ namespace AI_ExtraGirls {
         private static void StatusUI_AddScroll()
         { 
             GameObject Tab = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/MenuUI(Clone)/CellularUI/Interface Panel/StatusUI(Clone)/Tab");
-            GameObject Content = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/MenuUI(Clone)/CellularUI/Interface Panel/StatusUI(Clone)/Tab/Content");
-
-            if (Tab == null || Content == null)
+            if (Tab == null)
+                return;
+            
+            Transform Content = Tab.transform.Find("Content");
+            if (Content == null)
                 return;
 
             GameObject ScrollView = new GameObject("ScrollView", typeof(RectTransform));
             ScrollView.transform.SetParent(Tab.transform, false);
-            ScrollView.AddComponent<ScrollRect>();
-            var svScrollRect = ScrollView.GetComponent<ScrollRect>();
+            var svScrollRect = ScrollView.AddComponent<ScrollRect>();
 
             GameObject ViewPort = new GameObject("ViewPort", typeof(RectTransform));
             ViewPort.transform.SetParent(ScrollView.transform, false);
             ViewPort.AddComponent<RectMask2D>();
-            ViewPort.AddComponent<Image>();
-            ViewPort.GetComponent<Image>().color = new Color(0, 0, 0, 0);
+            ViewPort.AddComponent<Image>().color = new Color(0, 0, 0, 0);
             var vpRectTransform = ViewPort.GetComponent<RectTransform>();
 
-            Content.transform.SetParent(ViewPort.transform, false);
-            Content.AddComponent<ContentSizeFitter>();
+            Content.SetParent(ViewPort.transform, false);
+            Content.gameObject.AddComponent<ContentSizeFitter>();
 
-            var cContentSizeFitter = Content.GetComponent<ContentSizeFitter>();
+            var cContentSizeFitter = Content.gameObject.GetComponent<ContentSizeFitter>();
             cContentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
             cContentSizeFitter.verticalFit = ContentSizeFitter.FitMode.Unconstrained;
 
-            var cHorizontalLayoutGroup = Content.GetComponent<HorizontalLayoutGroup>();
+            var cHorizontalLayoutGroup = Content.gameObject.GetComponent<HorizontalLayoutGroup>();
             cHorizontalLayoutGroup.childForceExpandWidth = true;
 
-            svScrollRect.content = Content.GetComponent<RectTransform>();
+            svScrollRect.content = Content.gameObject.GetComponent<RectTransform>();
             svScrollRect.viewport = vpRectTransform;
             svScrollRect.horizontal = true;
             svScrollRect.vertical = false;
@@ -138,8 +153,8 @@ namespace AI_ExtraGirls {
             Transform Selection = Tab.transform.Find("Selection");
             Transform Focus = Tab.transform.Find("Focus");
 
-            Selection.SetParent(Content.transform);
-            Focus.SetParent(Content.transform);
+            Selection.SetParent(Content);
+            Focus.SetParent(Content);
 
             Selection.localScale = new Vector3(0.95f, 0.55f, 1);
         }
@@ -161,15 +176,15 @@ namespace AI_ExtraGirls {
 
             Dictionary<int, Sprite> ActorIconTable = Singleton<Manager.Resources>.Instance.itemIconTables.ActorIconTable;
 
-            if (ActorIconTable.Count >= girlCount + 2 || !ActorIconTable.ContainsKey(3)) 
+            if (ActorIconTable.Count >= girlCount + 2 || !ActorIconTable.ContainsKey(defaultGirlCount - 1)) 
                 return;
 
             for (int i = 0; i < girlCount + 2; i++)
             {
-                if (i < 4 || ActorIconTable.Count >= girlCount + 2)
+                if (i < defaultGirlCount || ActorIconTable.Count >= girlCount + 2)
                     continue;
 
-                ActorIconTable.Add(ActorIconTable.Count - 2, Instantiate(ActorIconTable[3]));
+                ActorIconTable.Add(ActorIconTable.Count - 2, Instantiate(ActorIconTable[defaultGirlCount - 1]));
             }
         }
         
@@ -234,14 +249,18 @@ namespace AI_ExtraGirls {
             var il = instructions.ToList();
             
             var index = il.FindIndex(instruction => instruction.opcode == OpCodes.Ldc_I4_4);
-            if (index <= 0) return il;
-            
+            if (index <= 0)
+            {
+                Logger.LogMessage("Failed transpiling 'ChangeCharaCount' Character count index not found!");
+                Logger.LogWarning("Failed transpiling 'ChangeCharaCount' Character count index not found!");
+                return il;
+            }
+
             il[index].opcode = OpCodes.Ldc_I4_S;
             il[index].operand = girlCount;
 
             return il;
         }
-        
         
         [HarmonyPostfix, HarmonyPatch(typeof(WorldData), "Copy")]
         public static void WorldData_Copy_AddRemoveAgents(WorldData __instance)
@@ -252,7 +271,7 @@ namespace AI_ExtraGirls {
             {
                 for (int i = 0; i < girlCount; i++)
                 {
-                    if (i < 4 || agents.Count >= girlCount)
+                    if (i < defaultGirlCount || agents.Count >= girlCount)
                         continue;
 
                     AgentData agentData = new AgentData();
@@ -261,7 +280,7 @@ namespace AI_ExtraGirls {
             }
 
             var keys = new List<int>(agents.Keys);
-            foreach (var key in keys.Where(key => key >= 4))
+            foreach (var key in keys.Where(key => key >= defaultGirlCount))
             {
                 if (key > girlCount - 1){
                     agents.Remove(key);
@@ -280,12 +299,17 @@ namespace AI_ExtraGirls {
             var il = instructions.ToList();
 
             var index = il.FindIndex(instruction => instruction.opcode == OpCodes.Ldfld && (instruction.operand as FieldInfo)?.Name == "TrajectoryGirl");
-            if (index <= 0) return il;
+            if (index <= 0)
+            {
+                Logger.LogMessage("Failed transpiling 'MiniMapControler_GirlIconInit_ClampIconIDs' TrajectoryGirl index not found!");
+                Logger.LogWarning("Failed transpiling 'MiniMapControler_GirlIconInit_ClampIconIDs' TrajectoryGirl index not found!");
+                return il;
+            }
             
             il.InsertRange(index + 3, new []
             {
                 new CodeInstruction(OpCodes.Ldc_I4_0), 
-                new CodeInstruction(OpCodes.Ldc_I4_3), 
+                new CodeInstruction(OpCodes.Ldc_I4_S, defaultGirlCount - 1), 
                 new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Mathf), nameof(Mathf.Clamp), new [] {typeof(int), typeof(int), typeof(int)})), 
             });
 
@@ -322,7 +346,7 @@ namespace AI_ExtraGirls {
             {
                 for (int i = 0; i < 1 + girlCount; i++)
                 {
-                    if (i < 5 || category.Count >= girlCount + 1)
+                    if (i < defaultGirlCount + 1 || category.Count >= girlCount + 1)
                         continue;
                     
                     CanvasGroup bgData = Instantiate(category[category.Count - 1], category[category.Count - 1].transform.parent);
@@ -343,12 +367,12 @@ namespace AI_ExtraGirls {
 
             for (int i = 0; i < 2 + girlCount; i++)
             {
-                if (i < 6 || mainBackgrounds.Count >= girlCount + 2)
+                if (i < defaultGirlCount + 2 || mainBackgrounds.Count >= girlCount + 2)
                     continue;
 
                 CanvasGroup bgData = Instantiate(
-                    mainBackgrounds[4], 
-                    mainBackgrounds[4].transform.parent
+                    mainBackgrounds[defaultGirlCount], 
+                    mainBackgrounds[defaultGirlCount].transform.parent
                 );
                 bgData.name = $"Chara ({i - 2:0})";    
                 
