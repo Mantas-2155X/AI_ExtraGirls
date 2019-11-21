@@ -18,3 +18,6 @@ Needs https://github.com/IllusionMods/BepisPlugins for configuration to work!
 
 **Installation:**  
 * Unzip `AI_ExtraGirls.zip` in the game directory  
+
+**Configuration:**  
+* Open the plugin settings and change girlcount. You will need to restart for changes to apply. More girls can then be added in the 'terminal' device by scrolling down.  
