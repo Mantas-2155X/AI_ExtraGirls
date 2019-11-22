@@ -17,7 +17,7 @@ Needs https://github.com/IllusionMods/BepisPlugins for configuration to work!
 * Download the latest `AI_ExtraGirls.zip` from https://github.com/Mantas-2155X/AI_ExtraGirls/releases  
 
 **Installation:**  
-* Unzip `AI_ExtraGirls.zip` in the game directory  
+* Unzip `AI_ExtraGirls.zip` in the game directory. If done correctly, you should now see `AI_ExtraGirls.dll` in the `BepInEx/plugins/2155X/` folder  
 
 **Configuration:**  
 * Open the plugin settings and change girlcount. You will need to restart for changes to apply. More girls can then be added in the 'terminal' devices girl selection menu by scrolling down.  
