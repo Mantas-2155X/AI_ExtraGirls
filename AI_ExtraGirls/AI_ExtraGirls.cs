@@ -25,15 +25,15 @@ namespace AI_ExtraGirls {
     [BepInPlugin(nameof(AI_ExtraGirls), nameof(AI_ExtraGirls), VERSION)][BepInProcess("AI-Syoujyo")]
     public class AI_ExtraGirls : BaseUnityPlugin
     {
-        public const string VERSION = "1.0.0";
+        public const string VERSION = "1.0.1";
         private new static ManualLogSource Logger;
         
         /*
-         * Default girl count, increase/decrease to change the girl count some methods see as a base, in-case the game gets an update.
+         * in-case the game gets an update:
          * Will need manual change: ChangeCharaCount()
          * May need manual change: AddIcons(), StatusUI_OnBeforeStart_AddElementsAndBackgrounds()
         */
-        private const int defaultGirlCount = 4;
+        private static int defaultGirlCount;
         private static readonly string[] toAddList =
         {
             "CharaChangeUI(Clone)",
@@ -41,14 +41,16 @@ namespace AI_ExtraGirls {
             "CharaMigrateUI(Clone)"
         };
         
-        private static int girlCount = 4;
+        private static int girlCount;
         private static ConfigEntry<int> GirlCount { get; set; }
         
         private void Awake()
         {
             Logger = base.Logger;
+
+            defaultGirlCount = GraphicSystem.MAX_CHARA_NUM;
             
-            GirlCount = Config.AddSetting("Requires restart! Modifies save!", "Free Roam Girl Count", defaultGirlCount, new ConfigDescription("Requires a restart to apply, will modify existing save. Save will stop working if the user doesn't have the plugin.", new AcceptableValueRange<int>(defaultGirlCount, 99)));
+            GirlCount = Config.AddSetting("Requires restart! Modifies save!", "Free Roam Girl Count", defaultGirlCount, new ConfigDescription("Requires a restart to apply.", new AcceptableValueRange<int>(defaultGirlCount, 99)));
             girlCount = GirlCount.Value;
             
             HarmonyWrapper.PatchAll(typeof(AI_ExtraGirls));
@@ -435,13 +437,13 @@ namespace AI_ExtraGirls {
         public static void GraphicSystem_Init_SetMaxCharas(GraphicSystem __instance) => GraphicSystem_SetMaxCharas(__instance);
 
         [HarmonyPrefix, HarmonyPatch(typeof(GraphicSystem), "Write")]
-        public static void GraphicSystem_Write_SetMaxCharas(GraphicSystem __instance) => GraphicSystem_SetMaxCharas(__instance);
+        public static void GraphicSystem_Write_SetMaxCharas_Pre(GraphicSystem __instance) => __instance.MaxCharaNum = defaultGirlCount;
+
+        [HarmonyPostfix, HarmonyPatch(typeof(GraphicSystem), "Write")]
+        public static void GraphicSystem_Write_SetMaxCharas_Post(GraphicSystem __instance) => __instance.MaxCharaNum = girlCount;
 
         [HarmonyPostfix, HarmonyPatch(typeof(GraphicSystem), "Read")]
         public static void GraphicSystem_Read_SetMaxCharas(GraphicSystem __instance) => GraphicSystem_SetMaxCharas(__instance);
-
-        [HarmonyTranspiler, HarmonyPatch(typeof(GraphicSystem), "Write")]
-        public static IEnumerable<CodeInstruction> GraphicSystem_Write_ChangeCharaCount(IEnumerable<CodeInstruction> instructions) => ChangeCharaCount(instructions);
         
         [HarmonyTranspiler, HarmonyPatch(typeof(GraphicSystem), "Read")] 
         public static IEnumerable<CodeInstruction> GraphicSystem_Read_ChangeCharaCount(IEnumerable<CodeInstruction> instructions) => ChangeCharaCount(instructions);
