@@ -4,8 +4,13 @@ This plugin allows you to have more than the default amount of girls in free roa
 **Please report any issues here:** https://github.com/Mantas-2155X/AI_ExtraGirls/issues  
 
 **WARNING**  
-* If you're having infinite loading screen from older version (<1.0.1), please download the latest version and open the in-game options screen to restore original `system.xml` girl count.  
 * When adding new girls in the girl selection menu, it is recommended to only create 4 or less at a time because the game can't keep up has trouble reloading them.  
+
+To fix a save for usage without this plugin:  
+* Set girls count to default (4), restart.  
+* Open settings menu (to fix system.xml),  
+* Load in the game and save (to fix WorldData).  
+* You can now remove the plugin or share the save with others who don't have it.  
 
 Needs https://github.com/IllusionMods/BepisPlugins for configuration to work!
 
