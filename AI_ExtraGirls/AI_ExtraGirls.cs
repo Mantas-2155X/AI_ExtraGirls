@@ -25,7 +25,7 @@ namespace AI_ExtraGirls {
     [BepInPlugin(nameof(AI_ExtraGirls), nameof(AI_ExtraGirls), VERSION)][BepInProcess("AI-Syoujyo")]
     public class AI_ExtraGirls : BaseUnityPlugin
     {
-        public const string VERSION = "1.0.1";
+        public const string VERSION = "1.0.2";
         private new static ManualLogSource Logger;
         
         /*
@@ -90,7 +90,7 @@ namespace AI_ExtraGirls {
                 vpRectTransform.offsetMax = new Vector2(400, 35);
                 vpRectTransform.sizeDelta = new Vector2(450, 290);
                 
-                ScrollView.transform.localPosition = new Vector3(-400, -130, 0);
+                ScrollView.transform.localPosition = new Vector3(uiName == "CharaMigrateUI(Clone)" ? -175 : -400, -130, 0);
                 
                 Information.GetComponent<VerticalLayoutGroup>().enabled = false;
 
@@ -98,7 +98,7 @@ namespace AI_ExtraGirls {
                 IconText.localPosition = new Vector3(uiName == "CharaChangeUI(Clone)" ? -140 : -195, -45, 0);
                 
                 Transform separate = Information.transform.Find("separate");
-                separate.GetComponent<RectTransform>().sizeDelta = new Vector2(380, 10);
+                separate.GetComponent<RectTransform>().sizeDelta = new Vector2(uiName == "CharaMigrateUI(Clone)" ? -90 : 380, 10);
                 separate.localPosition = new Vector3(-225, -80, 0);
 
                 if (uiName != "CharaLookEditUI(Clone)") 
