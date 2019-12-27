@@ -1,6 +1,8 @@
 # AI_ExtraGirls  
 This plugin allows you to have more than the default amount of girls in free roam.
 
+# DO NOT REUPLOAD WITHOUT PERMISSION | 未经许可请勿转载  
+
 **Please report any issues here:** https://github.com/Mantas-2155X/AI_ExtraGirls/issues  
 
 **WARNING**  
