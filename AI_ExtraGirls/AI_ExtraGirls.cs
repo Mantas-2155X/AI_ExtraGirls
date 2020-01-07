@@ -1,4 +1,4 @@
-using HarmonyLib;
+﻿using HarmonyLib;
 
 using BepInEx;
 using BepInEx.Harmony;
@@ -7,10 +7,9 @@ using BepInEx.Configuration;
 
 using System;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
 using System.Collections.Generic;
 
+using Manager;
 using AIProject;
 using AIProject.UI;
 using AIProject.SaveData;
@@ -25,15 +24,15 @@ namespace AI_ExtraGirls {
     [BepInPlugin(nameof(AI_ExtraGirls), nameof(AI_ExtraGirls), VERSION)][BepInProcess("AI-Syoujyo")]
     public class AI_ExtraGirls : BaseUnityPlugin
     {
-        public const string VERSION = "1.0.2";
-        private new static ManualLogSource Logger;
+        public const string VERSION = "1.0.3";
+        public new static ManualLogSource Logger;
         
         /*
          * in-case the game gets an update:
          * Will need manual change: ChangeCharaCount()
          * May need manual change: AddIcons(), StatusUI_OnBeforeStart_AddElementsAndBackgrounds()
         */
-        private static int defaultGirlCount;
+        public static int defaultGirlCount;
         private static readonly string[] toAddList =
         {
             "CharaChangeUI(Clone)",
@@ -41,7 +40,7 @@ namespace AI_ExtraGirls {
             "CharaMigrateUI(Clone)"
         };
         
-        private static int girlCount;
+        public static int girlCount;
         private static ConfigEntry<int> GirlCount { get; set; }
         
         private void Awake()
@@ -53,10 +52,10 @@ namespace AI_ExtraGirls {
             GirlCount = Config.AddSetting("Requires restart! Modifies save!", "Free Roam Girl Count", defaultGirlCount, new ConfigDescription("Requires a restart to apply.", new AcceptableValueRange<int>(defaultGirlCount, 99)));
             girlCount = GirlCount.Value;
             
+            HarmonyWrapper.PatchAll(typeof(Transpilers));
             HarmonyWrapper.PatchAll(typeof(AI_ExtraGirls));
         }
 
-        
         private static void CharaUI_AddScroll()
         { 
             foreach (string uiName in toAddList)
@@ -247,44 +246,6 @@ namespace AI_ExtraGirls {
                 trav.Field("_charaArrowButtons").SetValue(newCharaArrowButtons.ToArray());
         }
         
-        private static IEnumerable<CodeInstruction> ChangeCharaCount(IEnumerable<CodeInstruction> instructions)
-        {
-            var il = instructions.ToList();
-            
-            var index = il.FindIndex(instruction => instruction.opcode == OpCodes.Ldc_I4_4);
-            if (index <= 0)
-            {
-                Logger.LogMessage("Failed transpiling 'ChangeCharaCount' Character count index not found!");
-                Logger.LogWarning("Failed transpiling 'ChangeCharaCount' Character count index not found!");
-                return il;
-            }
-
-            il[index].opcode = OpCodes.Ldc_I4_S;
-            il[index].operand = girlCount;
-
-            return il;
-        }
-        
-        
-        [HarmonyTranspiler, HarmonyPatch(typeof(MapUIContainer), "GetActorColor")]
-        public static IEnumerable<CodeInstruction> MapUIContainer_GetActorColor_RemoveActorColorCheckError(IEnumerable<CodeInstruction> instructions)
-        {
-            var il = instructions.ToList();
-
-            var index = il.FindIndex(instruction => instruction.opcode == OpCodes.Call && (instruction.operand as MethodInfo)?.Name == "LogError");
-            if (index <= 0)
-            {
-                Logger.LogMessage("Failed transpiling 'MapUIContainer_GetActorColor_RemoveActorColorCheckError' LogError index not found!");
-                Logger.LogWarning("Failed transpiling 'MapUIContainer_GetActorColor_RemoveActorColorCheckError' LogError index not found!");
-                return il;
-            }
-
-            for (int i = -6; i < 1; i++)
-                il[index + i].opcode = OpCodes.Nop;
-            
-            return il;
-        }
-
         [HarmonyPostfix, HarmonyPatch(typeof(WorldData), "Copy")]
         public static void WorldData_Copy_AddRemoveAgents(WorldData __instance)
         {
@@ -314,31 +275,38 @@ namespace AI_ExtraGirls {
                 agents[key].OpenState = true;
                 agents[key].PlayEnterScene = true;
             }
+
+            if (Manager.Config.GraphicData != null)
+                GraphicSystem_SetMaxCharas(Manager.Config.GraphicData);
+        }
+
+        [HarmonyPrefix, HarmonyPatch(typeof(Map), "LoadAgents")]
+        public static void Map_LoadAgents_LoadAgents(Map __instance, ref WorldData profile)
+        {
+            if (profile == null || profile.AgentTable == null)
+                return;
+            
+            WorldData_Copy_AddRemoveAgents(profile);
+
+            if (__instance.PointAgent.DevicePointDic.Count >= girlCount) 
+                return;
+            
+            var keys = new List<int>(profile.AgentTable.Keys);
+            foreach (var key in keys.Where(key => !__instance.PointAgent.DevicePointDic.ContainsKey(key)))
+                __instance.PointAgent.DevicePointDic.Add(key, __instance.PointAgent.DevicePointDic[0]);
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(DevicePoint), "Start")]
+        public static void DevicePoint_Start_AddRemoveAgents(DevicePoint __instance)
+        {
+            if (__instance.RecoverPoints.Count >= girlCount) 
+                return;
+            
+            for (int i = 3; i < girlCount; i++)
+                __instance.RecoverPoints.Add(__instance.RecoverPoints[0]);
         }
         
-        [HarmonyTranspiler, HarmonyPatch(typeof(MiniMapControler), "GirlIconInit")]
-        public static IEnumerable<CodeInstruction> MiniMapControler_GirlIconInit_ClampIconIDs(IEnumerable<CodeInstruction> instructions)
-        {
-            var il = instructions.ToList();
-
-            var index = il.FindIndex(instruction => instruction.opcode == OpCodes.Ldfld && (instruction.operand as FieldInfo)?.Name == "TrajectoryGirl");
-            if (index <= 0)
-            {
-                Logger.LogMessage("Failed transpiling 'MiniMapControler_GirlIconInit_ClampIconIDs' TrajectoryGirl index not found!");
-                Logger.LogWarning("Failed transpiling 'MiniMapControler_GirlIconInit_ClampIconIDs' TrajectoryGirl index not found!");
-                return il;
-            }
-            
-            il.InsertRange(index + 3, new []
-            {
-                new CodeInstruction(OpCodes.Ldc_I4_0), 
-                new CodeInstruction(OpCodes.Ldc_I4_S, defaultGirlCount - 1), 
-                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Mathf), nameof(Mathf.Clamp), new [] {typeof(int), typeof(int), typeof(int)})), 
-            });
-
-            return il;
-        }
-
+        
         [HarmonyPrefix, HarmonyPatch(typeof(StatusUI), "OnBeforeStart")]
         public static void StatusUI_OnBeforeStart_AddElementsAndBackgrounds(StatusUI __instance)
         {
@@ -413,7 +381,7 @@ namespace AI_ExtraGirls {
             var trav = Traverse.Create(__instance);
             var charaButtons = trav.Field("_charaButtons").GetValue<Button[]>();
             
-            var actorTable = Singleton<Manager.Map>.Instance.ActorTable;
+            var actorTable = Singleton<Map>.Instance.ActorTable;
             for(int i = 1; i < charaButtons.Length; i++)
                 charaButtons[i].gameObject.SetActiveIfDifferent(actorTable.ContainsKey(i - 1));
         }
@@ -445,28 +413,15 @@ namespace AI_ExtraGirls {
         [HarmonyPostfix, HarmonyPatch(typeof(GraphicSystem), "Read")]
         public static void GraphicSystem_Read_SetMaxCharas(GraphicSystem __instance) => GraphicSystem_SetMaxCharas(__instance);
         
-        [HarmonyTranspiler, HarmonyPatch(typeof(GraphicSystem), "Read")] 
-        public static IEnumerable<CodeInstruction> GraphicSystem_Read_ChangeCharaCount(IEnumerable<CodeInstruction> instructions) => ChangeCharaCount(instructions);
-        
         
         [HarmonyPrefix, HarmonyPatch(typeof(CharaChangeUI), "OnBeforeStart")]
         public static void CharaChangeUI_OnBeforeStart_AddElements(CharaChangeUI __instance) => AddElements(__instance, null, null);
 
-        [HarmonyTranspiler, HarmonyPatch(typeof(CharaChangeUI), "SetActiveControl")]
-        public static IEnumerable<CodeInstruction> CharaChangeUI_SetActiveControl_ChangeCharaCount(IEnumerable<CodeInstruction> instructions) => ChangeCharaCount(instructions);
-        
-        
         [HarmonyPrefix, HarmonyPatch(typeof(CharaLookEditUI), "OnBeforeStart")]
         public static void CharaLookEditUI_OnBeforeStart_AddElements(CharaLookEditUI __instance) => AddElements(null, __instance, null);
-
-        [HarmonyTranspiler, HarmonyPatch(typeof(CharaLookEditUI), "SetActiveControl")]
-        public static IEnumerable<CodeInstruction> CharaLookEditUI_SetActiveControl_ChangeCharaCount(IEnumerable<CodeInstruction> instructions) => ChangeCharaCount(instructions);
-        
         
         [HarmonyPrefix, HarmonyPatch(typeof(CharaMigrateUI), "OnBeforeStart")]
         public static void CharaMigrateUI_OnBeforeStart_AddElements(CharaMigrateUI __instance) => AddElements(null, null, __instance);
-
-        [HarmonyTranspiler, HarmonyPatch(typeof(CharaMigrateUI), "SetActiveControl")]
-        public static IEnumerable<CodeInstruction> CharaMigrateUI_SetActiveControl_ChangeCharaCount(IEnumerable<CodeInstruction> instructions) => ChangeCharaCount(instructions);
+        
     }
 }
