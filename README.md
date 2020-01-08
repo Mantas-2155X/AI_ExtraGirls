@@ -10,7 +10,6 @@ This plugin allows you to have more than the default amount of girls in free roa
 
 **If you want to remove the plugin**, to fix a save for usage without this plugin:  
 * Set girls count to default (4), restart.  
-* Open settings menu (to fix system.xml),  
 * Load in the game and save (to fix WorldData).  
 * You can now remove the plugin or share the save with others who don't have it.  
 
