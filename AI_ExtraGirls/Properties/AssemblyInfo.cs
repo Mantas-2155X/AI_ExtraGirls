@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Mantas-2155X aka 2155X")]
 [assembly: AssemblyProduct("AI_ExtraGirls")]
-[assembly: AssemblyCopyright("Mantas-2155X aka 2155X Copyright ©  2019")]
+[assembly: AssemblyCopyright("Mantas-2155X aka 2155X Copyright ©  2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

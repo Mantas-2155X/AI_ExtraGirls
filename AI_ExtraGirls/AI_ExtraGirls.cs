@@ -24,7 +24,7 @@ namespace AI_ExtraGirls {
     [BepInPlugin(nameof(AI_ExtraGirls), nameof(AI_ExtraGirls), VERSION)][BepInProcess("AI-Syoujyo")]
     public class AI_ExtraGirls : BaseUnityPlugin
     {
-        public const string VERSION = "1.0.3";
+        public const string VERSION = "1.0.4";
         public new static ManualLogSource Logger;
         
         /*
@@ -49,7 +49,7 @@ namespace AI_ExtraGirls {
 
             defaultGirlCount = GraphicSystem.MAX_CHARA_NUM;
             
-            GirlCount = Config.AddSetting("Requires restart! Modifies save!", "Free Roam Girl Count", defaultGirlCount, new ConfigDescription("Requires a restart to apply.", new AcceptableValueRange<int>(defaultGirlCount, 99)));
+            GirlCount = Config.Bind("Requires restart! Modifies save!", "Free Roam Girl Count", defaultGirlCount, new ConfigDescription("Requires a restart to apply.", new AcceptableValueRange<int>(defaultGirlCount, 99)));
             girlCount = GirlCount.Value;
             
             HarmonyWrapper.PatchAll(typeof(Transpilers));

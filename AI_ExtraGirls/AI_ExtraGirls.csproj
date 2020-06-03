@@ -33,35 +33,35 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\lib\BepInEx\0Harmony.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\media\drive\Windows\Games\Ai-Syoujyo\BepInEx\core\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\lib\AISyoujyo\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\media\drive\Windows\Games\Ai-Syoujyo\AI-Syoujyo_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="BepInEx, Version=5.0.0.159, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\lib\BepInEx\BepInEx.dll</HintPath>
+    <Reference Include="BepInEx, Version=5.0.1.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\..\..\..\..\media\drive\Windows\Games\Ai-Syoujyo\BepInEx\core\BepInEx.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx.Harmony, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\lib\BepInEx\BepInEx.Harmony.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\media\drive\Windows\Games\Ai-Syoujyo\BepInEx\core\BepInEx.Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Sirenix.Serialization, Version=2.0.13.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\lib\AISyoujyo\Sirenix.Serialization.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\media\drive\Windows\Games\Ai-Syoujyo\AI-Syoujyo_Data\Managed\Sirenix.Serialization.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\lib\AISyoujyo\UnityEngine.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\media\drive\Windows\Games\Ai-Syoujyo\AI-Syoujyo_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\lib\AISyoujyo\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\media\drive\Windows\Games\Ai-Syoujyo\AI-Syoujyo_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\lib\AISyoujyo\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\media\drive\Windows\Games\Ai-Syoujyo\AI-Syoujyo_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\lib\AISyoujyo\UnityEngine.UIModule.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\media\drive\Windows\Games\Ai-Syoujyo\AI-Syoujyo_Data\Managed\UnityEngine.UIModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

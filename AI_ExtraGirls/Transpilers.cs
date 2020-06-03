@@ -29,26 +29,7 @@ namespace AI_ExtraGirls
 
             return il;
         }
-        
-        [HarmonyTranspiler, HarmonyPatch(typeof(MapUIContainer), "GetActorColor")]
-        public static IEnumerable<CodeInstruction> MapUIContainer_GetActorColor_RemoveActorColorCheckError(IEnumerable<CodeInstruction> instructions)
-        {
-            var il = instructions.ToList();
 
-            var index = il.FindIndex(instruction => instruction.opcode == OpCodes.Call && (instruction.operand as MethodInfo)?.Name == "LogError");
-            if (index <= 0)
-            {
-                AI_ExtraGirls.Logger.LogMessage("Failed transpiling 'MapUIContainer_GetActorColor_RemoveActorColorCheckError' LogError index not found!");
-                AI_ExtraGirls.Logger.LogWarning("Failed transpiling 'MapUIContainer_GetActorColor_RemoveActorColorCheckError' LogError index not found!");
-                return il;
-            }
-
-            for (int i = -6; i < 1; i++)
-                il[index + i].opcode = OpCodes.Nop;
-            
-            return il;
-        }
-                
         [HarmonyTranspiler, HarmonyPatch(typeof(MiniMapControler), "GirlIconInit")]
         public static IEnumerable<CodeInstruction> MiniMapControler_GirlIconInit_ClampIconIDs(IEnumerable<CodeInstruction> instructions)
         {
