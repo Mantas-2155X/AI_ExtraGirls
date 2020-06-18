@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 
 using BepInEx;
-using BepInEx.Harmony;
 using BepInEx.Logging;
 using BepInEx.Configuration;
 
@@ -52,8 +51,9 @@ namespace AI_ExtraGirls {
             GirlCount = Config.Bind("Requires restart! Modifies save!", "Free Roam Girl Count", defaultGirlCount, new ConfigDescription("Requires a restart to apply.", new AcceptableValueRange<int>(defaultGirlCount, 99)));
             girlCount = GirlCount.Value;
             
-            HarmonyWrapper.PatchAll(typeof(Transpilers));
-            HarmonyWrapper.PatchAll(typeof(AI_ExtraGirls));
+            var harmony = new Harmony(nameof(AI_ExtraGirls));
+            harmony.PatchAll(typeof(Transpilers));
+            harmony.PatchAll(typeof(AI_ExtraGirls));
         }
 
         private static void CharaUI_AddScroll()
@@ -247,7 +247,7 @@ namespace AI_ExtraGirls {
         }
         
         [HarmonyPostfix, HarmonyPatch(typeof(WorldData), "Copy")]
-        public static void WorldData_Copy_AddRemoveAgents(WorldData __instance)
+        private static void WorldData_Copy_AddRemoveAgents(WorldData __instance)
         {
             Dictionary<int, AgentData> agents = __instance.AgentTable;
 
@@ -283,7 +283,7 @@ namespace AI_ExtraGirls {
         [HarmonyPrefix, HarmonyPatch(typeof(Map), "LoadAgents")]
         public static void Map_LoadAgents_LoadAgents(Map __instance, ref WorldData profile)
         {
-            if (profile == null || profile.AgentTable == null)
+            if (profile?.AgentTable == null)
                 return;
             
             WorldData_Copy_AddRemoveAgents(profile);
