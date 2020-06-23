@@ -58,21 +58,21 @@ namespace AI_ExtraGirls {
 
         private static void CharaUI_AddScroll()
         { 
-            foreach (string uiName in toAddList)
+            foreach (var uiName in toAddList)
             {
-                GameObject Information = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/" + uiName + "/Panel/SelectPanel/Infomation");
+                var Information = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/" + uiName + "/Panel/SelectPanel/Infomation");
                 if (Information == null)
                     continue;
 
-                Transform ElementLayout = Information.transform.Find("ElementLayout");
+                var ElementLayout = Information.transform.Find("ElementLayout");
                 if (ElementLayout == null)
                     continue;
                 
-                GameObject ScrollView = new GameObject("ScrollView", typeof(RectTransform));
+                var ScrollView = new GameObject("ScrollView", typeof(RectTransform));
                 ScrollView.transform.SetParent(Information.transform, false);
                 var svScrollRect = ScrollView.AddComponent<ScrollRect>();
 
-                GameObject ViewPort = new GameObject("ViewPort", typeof(RectTransform));
+                var ViewPort = new GameObject("ViewPort", typeof(RectTransform));
                 ViewPort.transform.SetParent(ScrollView.transform, false);
                 ViewPort.AddComponent<RectMask2D>();
                 ViewPort.AddComponent<Image>().color = new Color(0, 0, 0, 0);
@@ -93,17 +93,17 @@ namespace AI_ExtraGirls {
                 
                 Information.GetComponent<VerticalLayoutGroup>().enabled = false;
 
-                Transform IconText = Information.transform.Find("IconText");
+                var IconText = Information.transform.Find("IconText");
                 IconText.localPosition = new Vector3(uiName == "CharaChangeUI(Clone)" ? -140 : -195, -45, 0);
                 
-                Transform separate = Information.transform.Find("separate");
+                var separate = Information.transform.Find("separate");
                 separate.GetComponent<RectTransform>().sizeDelta = new Vector2(uiName == "CharaMigrateUI(Clone)" ? -90 : 380, 10);
                 separate.localPosition = new Vector3(-225, -80, 0);
 
                 if (uiName != "CharaLookEditUI(Clone)") 
                     continue;
 
-                Transform button = ElementLayout.Find("btnCharaCreation");
+                var button = ElementLayout.Find("btnCharaCreation");
                 if (button == null) 
                     continue;
 
@@ -114,19 +114,19 @@ namespace AI_ExtraGirls {
         
         private static void StatusUI_AddScroll()
         { 
-            GameObject Tab = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/MenuUI(Clone)/CellularUI/Interface Panel/StatusUI(Clone)/Tab");
+            var Tab = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/MenuUI(Clone)/CellularUI/Interface Panel/StatusUI(Clone)/Tab");
             if (Tab == null)
                 return;
             
-            Transform Content = Tab.transform.Find("Content");
+            var Content = Tab.transform.Find("Content");
             if (Content == null)
                 return;
 
-            GameObject ScrollView = new GameObject("ScrollView", typeof(RectTransform));
+            var ScrollView = new GameObject("ScrollView", typeof(RectTransform));
             ScrollView.transform.SetParent(Tab.transform, false);
             var svScrollRect = ScrollView.AddComponent<ScrollRect>();
 
-            GameObject ViewPort = new GameObject("ViewPort", typeof(RectTransform));
+            var ViewPort = new GameObject("ViewPort", typeof(RectTransform));
             ViewPort.transform.SetParent(ScrollView.transform, false);
             ViewPort.AddComponent<RectMask2D>();
             ViewPort.AddComponent<Image>().color = new Color(0, 0, 0, 0);
@@ -152,8 +152,8 @@ namespace AI_ExtraGirls {
             vpRectTransform.offsetMax = new Vector2(270, 50);
             vpRectTransform.sizeDelta = new Vector2(540, 100);
 
-            Transform Selection = Tab.transform.Find("Selection");
-            Transform Focus = Tab.transform.Find("Focus");
+            var Selection = Tab.transform.Find("Selection");
+            var Focus = Tab.transform.Find("Focus");
 
             Selection.SetParent(Content);
             Focus.SetParent(Content);
@@ -163,8 +163,8 @@ namespace AI_ExtraGirls {
         
         private static void GraphicSystem_SetMaxCharas(GraphicSystem __instance)
         {
-            bool[] charasEntry = new bool[girlCount];
-            for (int i = 0; i < girlCount; i++)
+            var charasEntry = new bool[girlCount];
+            for (var i = 0; i < girlCount; i++)
                 charasEntry[i] = true;
 
             __instance.MaxCharaNum = girlCount;
@@ -176,12 +176,12 @@ namespace AI_ExtraGirls {
             if (useIconCategory && iconCategory != Manager.Resources.ItemIconTables.IconCategory.Item)
                 return;
 
-            Dictionary<int, Sprite> ActorIconTable = Singleton<Manager.Resources>.Instance.itemIconTables.ActorIconTable;
+            var ActorIconTable = Singleton<Manager.Resources>.Instance.itemIconTables.ActorIconTable;
 
             if (ActorIconTable.Count >= girlCount + 2 || !ActorIconTable.ContainsKey(defaultGirlCount - 1)) 
                 return;
 
-            for (int i = 0; i < girlCount + 2; i++)
+            for (var i = 0; i < girlCount + 2; i++)
             {
                 if (i < defaultGirlCount || ActorIconTable.Count >= girlCount + 2)
                     continue;
@@ -206,26 +206,26 @@ namespace AI_ExtraGirls {
             trav.Field("_infos").SetValue(new GameLoadCharaFileSystem.GameCharaFileInfo[girlCount]);
             
             var oldelements = trav.Field("_elements").GetValue<RectTransform[]>();
-            List<RectTransform> newelements = new List<RectTransform>();
+            var newelements = new List<RectTransform>();
             newelements.AddRange(oldelements);
 
             var oldcharaButtons = trav.Field("_charaButtons").GetValue<Button[]>();
-            List<Button> newCharaButtons = new List<Button>();
+            var newCharaButtons = new List<Button>();
             newCharaButtons.AddRange(oldcharaButtons);
             
             var oldcharaTexts = trav.Field("_charaTexts").GetValue<Text[]>();
-            List<Text> newCharaTexts = new List<Text>();
+            var newCharaTexts = new List<Text>();
             newCharaTexts.AddRange(oldcharaTexts);
 
-            List<Button> newCharaArrowButtons = new List<Button>();
+            var newCharaArrowButtons = new List<Button>();
             if (migrate != null)
             {
                 var oldcharaArrowButtons = trav.Field("_charaArrowButtons").GetValue<Button[]>();
                 newCharaArrowButtons.AddRange(oldcharaArrowButtons);
             }
             
-            int oldElementsLength = oldelements.Length;
-            for (int i = 0; i < girlCount - oldElementsLength; i++)
+            var oldElementsLength = oldelements.Length;
+            for (var i = 0; i < girlCount - oldElementsLength; i++)
             {
                 var copy = Instantiate(oldelements[oldElementsLength - 1], oldelements[oldElementsLength - 1].transform.parent);
                 copy.name = $"Element_{i+oldElementsLength:00}";
@@ -249,16 +249,16 @@ namespace AI_ExtraGirls {
         [HarmonyPostfix, HarmonyPatch(typeof(WorldData), "Copy")]
         private static void WorldData_Copy_AddRemoveAgents(WorldData __instance)
         {
-            Dictionary<int, AgentData> agents = __instance.AgentTable;
+            var agents = __instance.AgentTable;
 
             if (agents.Count < girlCount)
             {
-                for (int i = 0; i < girlCount; i++)
+                for (var i = 0; i < girlCount; i++)
                 {
                     if (i < defaultGirlCount || agents.Count >= girlCount)
                         continue;
 
-                    AgentData agentData = new AgentData();
+                    var agentData = new AgentData();
                     agents.Add(agents.Count, agentData);
                 }
             }
@@ -302,7 +302,7 @@ namespace AI_ExtraGirls {
             if (__instance.RecoverPoints.Count >= girlCount) 
                 return;
             
-            for (int i = 3; i < girlCount; i++)
+            for (var i = 3; i < girlCount; i++)
                 __instance.RecoverPoints.Add(__instance.RecoverPoints[0]);
         }
         
@@ -313,11 +313,11 @@ namespace AI_ExtraGirls {
             var trav = Traverse.Create(__instance);
             var oldcharaButtons = trav.Field("_charaButtons").GetValue<Button[]>();
             
-            List<Button> newCharaButtons = new List<Button>();
+            var newCharaButtons = new List<Button>();
             newCharaButtons.AddRange(oldcharaButtons);
 
-            int oldCharaButtonsLength = oldcharaButtons.Length;
-            for (int i = 0; i < 1 + girlCount - oldCharaButtonsLength; i++)
+            var oldCharaButtonsLength = oldcharaButtons.Length;
+            for (var i = 0; i < 1 + girlCount - oldCharaButtonsLength; i++)
             {
                 var copy = Instantiate(oldcharaButtons[oldCharaButtonsLength - 1], oldcharaButtons[oldCharaButtonsLength - 1].transform.parent);
                 copy.name = $"Chara ({oldCharaButtonsLength + i - 1:0})";
@@ -325,7 +325,7 @@ namespace AI_ExtraGirls {
                 newCharaButtons.Add(copy.GetComponent<Button>());
             }
 
-            List<Dictionary<int, CanvasGroup>> backgrounds = new List<Dictionary<int, CanvasGroup>>
+            var backgrounds = new List<Dictionary<int, CanvasGroup>>
             {
                 trav.Field("_equipmentBackgrounds").GetValue<Dictionary<int, CanvasGroup>>(),
                 trav.Field("_equipmentFlavorBackgrounds").GetValue<Dictionary<int, CanvasGroup>>(),
@@ -335,12 +335,12 @@ namespace AI_ExtraGirls {
             
             foreach (var category in backgrounds.Where(category => category.Count < girlCount + 1))
             {
-                for (int i = 0; i < 1 + girlCount; i++)
+                for (var i = 0; i < 1 + girlCount; i++)
                 {
                     if (i < defaultGirlCount + 1 || category.Count >= girlCount + 1)
                         continue;
                     
-                    CanvasGroup bgData = Instantiate(category[category.Count - 1], category[category.Count - 1].transform.parent);
+                    var bgData = Instantiate(category[category.Count - 1], category[category.Count - 1].transform.parent);
                     bgData.name = $"Chara ({i:0})";    
                     
                     category.Add(category.Count, bgData);
@@ -354,14 +354,14 @@ namespace AI_ExtraGirls {
             trav.Field("_charaButtons").SetValue(newCharaButtons.ToArray());
             
             trav = Traverse.Create(__instance.Observer);
-            Dictionary<int, CanvasGroup> mainBackgrounds = trav.Field("_backgrounds").GetValue<Dictionary<int, CanvasGroup>>();
+            var mainBackgrounds = trav.Field("_backgrounds").GetValue<Dictionary<int, CanvasGroup>>();
 
-            for (int i = 0; i < 2 + girlCount; i++)
+            for (var i = 0; i < 2 + girlCount; i++)
             {
                 if (i < defaultGirlCount + 2 || mainBackgrounds.Count >= girlCount + 2)
                     continue;
 
-                CanvasGroup bgData = Instantiate(
+                var bgData = Instantiate(
                     mainBackgrounds[defaultGirlCount], 
                     mainBackgrounds[defaultGirlCount].transform.parent
                 );
@@ -382,7 +382,7 @@ namespace AI_ExtraGirls {
             var charaButtons = trav.Field("_charaButtons").GetValue<Button[]>();
             
             var actorTable = Singleton<Map>.Instance.ActorTable;
-            for(int i = 1; i < charaButtons.Length; i++)
+            for(var i = 1; i < charaButtons.Length; i++)
                 charaButtons[i].gameObject.SetActiveIfDifferent(actorTable.ContainsKey(i - 1));
         }
         
