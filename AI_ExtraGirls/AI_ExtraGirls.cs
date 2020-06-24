@@ -20,10 +20,12 @@ using ConfigScene;
 using Illusion.Extensions;
 
 namespace AI_ExtraGirls {
-    [BepInPlugin(nameof(AI_ExtraGirls), nameof(AI_ExtraGirls), VERSION)][BepInProcess("AI-Syoujyo")]
+    [BepInProcess("AI-Syoujyo")]
+    [BepInPlugin(nameof(AI_ExtraGirls), nameof(AI_ExtraGirls), VERSION)]
     public class AI_ExtraGirls : BaseUnityPlugin
     {
         public const string VERSION = "1.0.4";
+        
         public new static ManualLogSource Logger;
         
         /*
@@ -31,6 +33,8 @@ namespace AI_ExtraGirls {
          * Will need manual change: ChangeCharaCount()
          * May need manual change: AddIcons(), StatusUI_OnBeforeStart_AddElementsAndBackgrounds()
         */
+        
+        public static int girlCount;
         public static int defaultGirlCount;
         private static readonly string[] toAddList =
         {
@@ -39,7 +43,6 @@ namespace AI_ExtraGirls {
             "CharaMigrateUI(Clone)"
         };
         
-        public static int girlCount;
         private static ConfigEntry<int> GirlCount { get; set; }
         
         private void Awake()
@@ -177,7 +180,6 @@ namespace AI_ExtraGirls {
                 return;
 
             var ActorIconTable = Singleton<Manager.Resources>.Instance.itemIconTables.ActorIconTable;
-
             if (ActorIconTable.Count >= girlCount + 2 || !ActorIconTable.ContainsKey(defaultGirlCount - 1)) 
                 return;
 
@@ -190,18 +192,9 @@ namespace AI_ExtraGirls {
             }
         }
         
-        private static void AddElements(CharaChangeUI change, CharaLookEditUI lookedit, CharaMigrateUI migrate)
+        private static void AddElements(object type, bool migrate = false)
         {
-            Traverse trav;
-            
-            if(change != null)
-                trav = Traverse.Create(change);
-            else if(lookedit != null)
-                trav = Traverse.Create(lookedit);
-            else if(migrate != null)
-                trav = Traverse.Create(migrate);
-            else
-                return;
+            var trav = Traverse.Create(type);
 
             trav.Field("_infos").SetValue(new GameLoadCharaFileSystem.GameCharaFileInfo[girlCount]);
             
@@ -218,7 +211,7 @@ namespace AI_ExtraGirls {
             newCharaTexts.AddRange(oldcharaTexts);
 
             var newCharaArrowButtons = new List<Button>();
-            if (migrate != null)
+            if (migrate)
             {
                 var oldcharaArrowButtons = trav.Field("_charaArrowButtons").GetValue<Button[]>();
                 newCharaArrowButtons.AddRange(oldcharaArrowButtons);
@@ -234,7 +227,7 @@ namespace AI_ExtraGirls {
                 newCharaButtons.Add(copy.transform.Find("Button").GetComponent<Button>());
                 newCharaTexts.Add(copy.transform.Find("Button/Text").GetComponent<Text>());
                 
-                if(migrate != null)
+                if(migrate)
                     newCharaArrowButtons.Add(copy.transform.Find("arrow").GetComponent<Button>());
             }
             
@@ -242,7 +235,7 @@ namespace AI_ExtraGirls {
             trav.Field("_charaButtons").SetValue(newCharaButtons.ToArray());
             trav.Field("_charaTexts").SetValue(newCharaTexts.ToArray());
             
-            if(migrate != null)
+            if(migrate)
                 trav.Field("_charaArrowButtons").SetValue(newCharaArrowButtons.ToArray());
         }
         
@@ -415,13 +408,13 @@ namespace AI_ExtraGirls {
         
         
         [HarmonyPrefix, HarmonyPatch(typeof(CharaChangeUI), "OnBeforeStart")]
-        public static void CharaChangeUI_OnBeforeStart_AddElements(CharaChangeUI __instance) => AddElements(__instance, null, null);
+        public static void CharaChangeUI_OnBeforeStart_AddElements(CharaChangeUI __instance) => AddElements(__instance);
 
         [HarmonyPrefix, HarmonyPatch(typeof(CharaLookEditUI), "OnBeforeStart")]
-        public static void CharaLookEditUI_OnBeforeStart_AddElements(CharaLookEditUI __instance) => AddElements(null, __instance, null);
+        public static void CharaLookEditUI_OnBeforeStart_AddElements(CharaLookEditUI __instance) => AddElements(__instance);
         
         [HarmonyPrefix, HarmonyPatch(typeof(CharaMigrateUI), "OnBeforeStart")]
-        public static void CharaMigrateUI_OnBeforeStart_AddElements(CharaMigrateUI __instance) => AddElements(null, null, __instance);
+        public static void CharaMigrateUI_OnBeforeStart_AddElements(CharaMigrateUI __instance) => AddElements(__instance, true);
         
     }
 }
